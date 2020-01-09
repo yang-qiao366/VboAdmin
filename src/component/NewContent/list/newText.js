@@ -1,9 +1,14 @@
 import React, { Component } from 'react';
-import { Button, Popconfirm, message, Input, Select } from 'antd';
-import Editor from 'for-editor'
+import { Button, Popconfirm, message, Input, Select } 
+from 'antd';
+// import Editor from 'for-editor'
 import axios from 'axios';
 import NewTag from './NewTag'
-
+import SimpleMDE from 'simplemde'
+import marked from 'marked'
+import highlight from 'highlight.js'
+import 'simplemde/dist/simplemde.min.css'
+//import Editor from './Editor'
 const { Option } = Select;
 class NewText extends Component {
         constructor(props){
@@ -12,11 +17,43 @@ class NewText extends Component {
             value:'',
             title: '',
             categoty:'',
-            tag: ''
+            tag: '',
+            serverExtra: {
+                // 上传文件额外请求头
+                headers: {
+                  Auth: 'token'
+                },
+                // 上传文件额外的数据
+                extraData: {
+                  desc: 'more data'
+                }
+    }
         }
         this.$vm = React.createRef()
     }
 
+componentDidMount() {
+        this.smde = new SimpleMDE({
+            element: document.getElementById('editorId').childElementCount,
+            autofocus: true,
+            autosave: true,
+            previewRender: function (plainText) {
+                return marked(plainText, {
+                    renderer: new marked.Renderer(),
+                    gfm: true,
+                    pedantic: false,
+                    sanitize: false,
+                    tables: true,
+                    breaks: true,
+                    smartLists: true,
+                    smartypants: true,
+                    highlight: function (code) {
+                        return highlight.highlightAuto(code).value;
+                    }
+                });
+            },
+        })
+    }
     // 确认发布操作警示弹出框
     confirm(e) {
     console.log(e);
@@ -67,6 +104,8 @@ class NewText extends Component {
       })
   }
 
+  onChange = (value) => this.setState(value);
+
     render() { 
         return ( 
             <div>
@@ -82,13 +121,14 @@ class NewText extends Component {
     <Input placeholder="请输入标题" style={{width:'400px', margin: 8}} onChange={this.handelChangeTitle.bind(this)} />
     <NewTag pfn={this.fn.bind(this)}/>
     </div>
-         <Editor 
+      <textarea id='editorId'/> 
+         {/* <Editor 
          value={this.state.value} 
          onChange={this.handelChangecontent.bind(this)} 
          addImg={($file) => this.addImg($file)}
           ref={this.$vm}
         height='529px'
-          />
+          /> */}
           <Popconfirm
     title="是否发布文章?"
     onConfirm={this.confirm.bind(this)}
@@ -111,8 +151,7 @@ class NewText extends Component {
           </div>
         );
         
-    }
-  componentDidMount(){}  
+    };
 }
  
 export default NewText;
